@@ -1,0 +1,128 @@
+@echo off
+SetLocal EnableExtensions EnableDelayedExpansion
+rem Для работы с форматом ANSI
+chcp 1251	
+rem Создаем временную папку
+mkdir C:\test
+rem Из крипто про записываем все данные о сертификатах во временный файл
+"C:\Program Files\Crypto Pro\CSP\certmgr.exe" -list -der > C:\test\test.txt
+rem Переход во временную папку
+cd C:\test
+rem Подсчет общего кол-во строк во временном файле для обозначения конца цикла и для отсчета начала каждого сертификата 
+for /f "usebackq" %%S in (`find /c /v ""^<"test.txt"`) do (set /a NumStr=%%S)
+rem Номер начала первого сертификата
+set nomer=4
+rem Номер строки имени сертификата
+set /a name=%nomer%+2
+rem Номер строки даты создания сертификата
+set /a sozdano=%nomer%+8
+rem Порядковый номер сертификата
+set NomerSert=1
+rem Последний номер строки основного цикла
+set /a strokiTexta=%NumStr% - 13
+rem Основной цикл который перебирает строки и удаляет сертификаты
+for /f "usebackq delims=[]" %%S in (`find /n /v "" test.txt ^| find "--"`) do (
+	rem условие ищет начало строки "1-------" и начинает работать с этой строчки
+	if %%S gtr 1 (
+	set /a name= 2 + %%S
+	set /a sozdano=8 + %%S
+	rem Выводим порядковый номер сертификата
+	echo = Sertifikat NOMER !NomerSert! =
+	set /a NomerSert+=1
+rem 2 первых цикла выводят полную строчку имени сертификата
+set "nameL=%C:\test\test.txt"
+for /f "usebackq delims=" %%i in (`find /n /v "" !nameL! ^| find "[!name!]"`) do (set str=%%i)
+rem пропуск лишних символов в начале строки
+for /f "delims=] tokens=2" %%i in ("!str!") do (set from=%%i)
+
+rem Цикл выводит подстроки со СНИЛСом и Полным ФИО хозяина серификата
+for /f "delims=, tokens=5,10" %%a in ("!from!") do (
+set nameSertifirata= %%a %%b
+)
+rem Вывод СНИЛС и ФИО хозяина сертификата
+echo Imy` Sertifikata: !nameSertifirata!
+
+rem 2 первых цикла выводят дату создания сертификата
+set "nameQ=%C:\test\test.txt"
+for /f "usebackq delims=" %%i in (`find /n /v "" !nameQ! ^| find "[!sozdano!]"`) do (set str=%%i)
+rem пропуск лишних символов в начале строки
+for /f "delims=] tokens=2" %%i in ("!str!") do (set fromQ=%%i)
+set dataVidachiSer=!fromQ:~22,10!
+set pervayDay=!dataVidachiSer:~0,1!
+set pervayMonth=!dataVidachiSer:~3,1!
+
+rem Что бы система понимала, что 01.01 это 1 января а не 8ми битное число, сохраняем дату создания без нулей впереди
+set nol=0
+::Для удаления нуля из ДНЯ
+if !pervayDay! equ !nol! (
+   set epDOKday=!dataVidachiSer:~1,1!
+) else (
+   set epDOKday=!dataVidachiSer:~0,2!
+) 
+::Для удаления нуля из МЕСЯЦА
+if !pervayMonth! equ !nol! (
+   set epDOKmonth=!dataVidachiSer:~4,1!
+) else (
+   set epDOKmonth=!dataVidachiSer:~3,2!
+)
+rem Прибавляем 1 год к дате создания для последующего сравнения с текущей датой	
+set /a epDOKyear=!dataVidachiSer:~6,4! +1
+rem Вывод Даты создания сертификата
+echo Sertifikat istekaet: !epDOKday!.!epDOKmonth!.!epDOKyear!
+rem Разделение текущей даты по 3 переменным
+echo Tekushchaya data: %date%
+set /a day=!DATE:~0,2!
+set /a month=!DATE:~3,2!
+set /a year=!DATE:~6,4! + 2
+rem Для уточнения, на сколько времени сертификат просрочен
+:: Переменные для отображения времени просрочки
+set /a yearFORmessage=!year!-!epDOKyear!
+set /a monthFORmessage=!month!-!epDOKmonth!
+set /a dayFORmessage=!day!-!epDOKday!
+
+rem Условие IF проверяет текущую дату с датой создания прибавленное на 1 год
+if !year! GTR !epDOKyear! (::Серитфикат закончился в этом году
+    echo Sertifikat prosrochen na !yearFORmessage! god - UDALIT'!!!
+rem    "C:\Program Files\Crypto Pro\CSP\certmgr.exe" -delete -dn "!nameSertifirata!"
+    echo Staryy Fayl Udalen "God"!!!
+) 
+if !year! EQU !epDOKyear! (:: == Сертификат Закончится в этом году
+    if !month! GTR !epDOKmonth! (:: > Сертификат Закончился в этом году к этому месяцу
+        echo Sertifikat prosrochen na %monthFORmessage% mesyatsev - UDALIT'!!!
+rem 	"C:\Program Files\Crypto Pro\CSP\certmgr.exe" -delete -dn "!nameSertifirata!"
+        echo Staryy Fayl Udalen "Mesyats"!!!        
+)
+)
+if !year! EQU !epDOKyear! (::== Сертификат Закончится в этом году
+    if !month! EQU !epDOKmonth! (::== Сертификат закончится в этом месяце
+     if !day! GTR !epDOKday! ( :: > Сертификат закончился к этому году
+         echo Sertifikat prosrochen na !dayFORmessage! dney - UDALIT'!!!
+rem 	 "C:\Program Files\Crypto Pro\CSP\certmgr.exe" -delete -dn "!nameSertifirata!"
+         echo Staryy Fayl Udalen "Den'"!!!	 
+)
+) 
+) else (
+	echo SERTIFIKAT DEYSTVITELEN
+	
+)
+echo ==========
+)
+)
+
+rem Выход из тестовый папки в диск С
+cd C:\
+rem Удаление временной папки с временным файлом
+rem rmdir /s /q C:\test
+pause
+
+
+
+
+
+
+
+
+
+
+
+
