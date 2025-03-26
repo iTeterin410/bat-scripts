@@ -1,0 +1,9 @@
+@echo off
+chcp 65001
+echo Hello
+
+"C:\Program Files\Crypto Pro\CSP\certmgr.exe" -inst -pfx -store My (имя сертификата) -pin (пароль)
+
+pause
+
+
