@@ -1,0 +1,21 @@
+@echo off
+chcp 65001
+echo Hello
+:: Работающий установщик
+msiexec /i "C:\test\1CEnterprise 8 Thin client (x86-64).msi" /qr TRANSFORMS=adminstallrelogon.mst;1049.mst DESIGNERALLCLIENTS=1 THICKCLIENT=1 THINCLIENTFILE=1 THINCLIENT=1 WEBSERVEREXT=0 SERVER=0 CONFREPOSSERVER=0 CONVERTER77=0 SERVERCLIENT=0 LANGUAGES=RUя
+
+::TRANSFORMS=adminstallrelogon.mst;1049.mst - подключаем рекомендованную фирмой 1С трансформацию adminstallrelogon.mst и пакет русского языка 1049.mst
+::DESIGNERALLCLIENTS=1 – Важный момент! Это основные компоненты 1С:Предприятия, включая компоненты для администрирования, конфигуратор и толстый клиент. Без этого параметра ставится всегда только тонкий клиент, независимо от следующего параметра
+::THICKCLIENT=1 – Толстый клиент
+::THINCLIENTFILE=1 — Тонкий клиент, файловый вариант
+::THINCLIENT=1 – Тонкий клиент
+::WEBSERVEREXT=0 – Модули расширения WEB-сервера
+::SERVER=0 – Сервер 1С:Предприятия
+::CONFREPOSSERVER=0 – Сервер хранилища конфигураций
+::CONVERTER77=0 – Конвертер баз 1С:Предприятия 7.7
+::SERVERCLIENT=0 – Администрирование сервера
+::LANGUAGES=RU – Язык установки – русский.
+
+pause
+
+
