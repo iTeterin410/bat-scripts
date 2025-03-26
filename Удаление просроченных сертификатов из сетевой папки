@@ -1,0 +1,86 @@
+@echo off
+chcp 65001
+echo Hello
+rem Выводит только просроченные
+rem УДАЛЯЕТ
+
+setlocal ENABLEDELAYEDEXPANSION
+rem cd C:\test
+cd/d Y:\
+set prefiks=@pk.gp43.spb
+
+for /r %%a in (*) do (
+set name=%%~na
+if !name:~-12! equ !prefiks! (
+
+rem тут выводилось имя подписи
+set dataSOZ=%%~ta
+rem здесь выводилось дата создания
+set pervayDay=!dataSOZ:~0,1!
+set pervayMonth=!dataSOZ:~3,1!
+set /a dataYear=!dataSOZ:~6,4! + 1
+
+set nol=0
+::Для удаления нуля из ДНЯ
+if !pervayDay! equ !nol! (
+   set dataDay=!dataSOZ:~1,1!
+) else (
+   set dataDay=!dataSOZ:~0,2!
+) 
+::Для удаления нуля из МЕСЯЦА
+if !pervayMonth! equ !nol! (
+   set dataMonth=!dataSOZ:~4,1!
+) else (
+   set dataMonth=!dataSOZ:~3,2!
+)	
+rem echo Дата Изменения: !dataDay!.!dataMonth!.!dataYear!
+
+rem Вывод текущей даты
+set /a day=!DATE:~0,2!
+set /a month=!DATE:~3,2!
+set /a year=!DATE:~6,4!
+:: Переменные для отображения времени просрочки
+set /a yearFORmessage=!year!-!dataYear!
+set /a monthFORmessage=!month!-!dataMonth!
+set /a dayFORmessage=!day!-!dataDay!
+
+
+if !year! GTR !dataYear! (::Серитфикат закончился в этом году
+    echo Имя Подписи: !name! 
+    echo Дата Создания: !dataSOZ!
+    echo Текущая Дата: %date%    
+    echo Удалить, так как больше !yearFORmessage! года
+    del/q %%~pa
+    echo ===================
+    
+) 
+if !year! EQU !dataYear! (:: == Сертификат Закончится в этом году
+    if !month! GTR !dataMonth! (:: > Сертификат Закончился в этом году к этому месяцу
+    echo Имя Подписи: !name! 
+    echo Дата Создания: !dataSOZ!
+    echo Текущая Дата: %date%
+    echo Удалить, так как больше !monthFORmessage! месяца
+    del/q %%~pa
+    echo ===================
+	        
+)
+)
+if !year! EQU !dataYear! (::== Сертификат Закончится в этом году
+    if !month! EQU !dataMonth! (::== Сертификат закончится в этом месяце
+     if !day! GTR !dataDay! ( :: > Сертификат закончился к этому году
+         echo Имя Подписи: !name! 
+         echo Дата Создания: !dataSOZ!
+         echo Текущая Дата: %date%
+         echo Удалить, так как больше !dayFORmessage! дня
+         del/q %%~pa	 
+         echo ===================	 
+)
+) 
+)
+
+)
+)
+
+pause
+
+
